@@ -573,7 +573,7 @@
     const name = getFromName();
     const { slug } = getMonthYear();
     if (!name || !slug) return 'invoice.pdf';
-    return `${name}_${slug}.pdf`;
+    return `Invoice_${name}_${slug}.pdf`;
   }
 
   function renderLineEditor() {
