@@ -62,9 +62,33 @@
     letter-spacing: .1em;
     text-transform: uppercase;
     color: var(--ink-faint);
-    margin: 1.5rem 0 .6rem;
+    margin: 1.5rem 0 0;
     padding-bottom: .4rem;
     border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-label:hover { color: var(--ink-muted); }
+  .section-arrow {
+    font-size: 9px;
+    transition: transform .2s ease;
+    display: inline-block;
+  }
+  .section-arrow.collapsed { transform: rotate(-90deg); }
+  .section-body {
+    overflow: hidden;
+    transition: max-height .25s ease, opacity .2s ease;
+    max-height: 1000px;
+    opacity: 1;
+    padding-top: .6rem;
+  }
+  .section-body.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
   }
 
   .field-group { margin-bottom: .75rem; }
@@ -416,128 +440,142 @@
       <button class="ei-btn ei-clear-btn" onclick="clearData()">✕ Clear</button>
     </div>
 
-    <div class="section-label">Invoice Number &amp; Date</div>
-    <div class="row-2">
-      <div class="field-group">
-        <label>Number</label>
-        <input type="text" id="inv-number" value="" oninput="update()">
-      </div>
-      <div class="field-group">
-        <label>Date</label>
-        <input type="date" id="inv-date" oninput="update()">
+    <div class="section-label" onclick="toggleSection('sec-number')">Invoice Number &amp; Date <span class="section-arrow" id="arrow-sec-number">▼</span></div>
+    <div class="section-body" id="sec-number">
+      <div class="row-2">
+        <div class="field-group">
+          <label>Number</label>
+          <input type="text" id="inv-number" value="" oninput="update()">
+        </div>
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date" id="inv-date" oninput="update()">
+        </div>
       </div>
     </div>
 
-    <div class="section-label">Invoice To (Client)</div>
-    <div class="field-group">
-      <label>Company Name</label>
-      <input type="text" id="to-name" value="" oninput="update()">
+    <div class="section-label" onclick="toggleSection('sec-client')">Invoice To (Client) <span class="section-arrow" id="arrow-sec-client">▼</span></div>
+    <div class="section-body" id="sec-client">
+      <div class="field-group">
+        <label>Company Name</label>
+        <input type="text" id="to-name" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Address Line 1</label>
+        <input type="text" id="to-addr1" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Address Line 2</label>
+        <input type="text" id="to-addr2" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Country</label>
+        <input type="text" id="to-country" value="" oninput="update()">
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="to-email" value="" oninput="update()">
+        </div>
+        <div class="field-group">
+          <label>Telephone</label>
+          <input type="text" id="to-phone" value="" oninput="update()">
+        </div>
+      </div>
+      <div class="row-2">
+        <div class="field-group">
+          <label>VAT NR</label>
+          <input type="text" id="to-vat" value="" oninput="update()">
+        </div>
+        <div class="field-group">
+          <label>KvK</label>
+          <input type="text" id="to-kvk" value="" oninput="update()">
+        </div>
+      </div>
     </div>
-    <div class="field-group">
-      <label>Address Line 1</label>
-      <input type="text" id="to-addr1" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Address Line 2</label>
-      <input type="text" id="to-addr2" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Country</label>
-      <input type="text" id="to-country" value="" oninput="update()">
-    </div>
-    <div class="row-2">
+
+    <div class="section-label" onclick="toggleSection('sec-from')">Invoice From (You) <span class="section-arrow" id="arrow-sec-from">▼</span></div>
+    <div class="section-body" id="sec-from">
+      <div class="field-group">
+        <label>Name</label>
+        <input type="text" id="from-name" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Address Line 1</label>
+        <input type="text" id="from-addr1" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Address Line 2</label>
+        <input type="text" id="from-addr2" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Address Line 3</label>
+        <input type="text" id="from-addr3" value="" oninput="update()">
+      </div>
       <div class="field-group">
         <label>Email</label>
-        <input type="email" id="to-email" value="" oninput="update()">
+        <input type="email" id="from-email" value="" oninput="update()">
       </div>
       <div class="field-group">
-        <label>Telephone</label>
-        <input type="text" id="to-phone" value="" oninput="update()">
+        <label>Phone</label>
+        <input type="text" id="from-phone" value="" oninput="update()">
       </div>
     </div>
-    <div class="row-2">
+
+    <div class="section-label" onclick="toggleSection('sec-subject')">Subject <span class="section-arrow" id="arrow-sec-subject">▼</span></div>
+    <div class="section-body" id="sec-subject">
       <div class="field-group">
-        <label>VAT NR</label>
-        <input type="text" id="to-vat" value="" oninput="update()">
+        <label>Re:</label>
+        <input type="text" id="subject" value="" oninput="update()">
+      </div>
+    </div>
+
+    <div class="section-label" onclick="toggleSection('sec-lines')">Line Items <span class="section-arrow" id="arrow-sec-lines">▼</span></div>
+    <div class="section-body" id="sec-lines">
+      <div id="line-items-editor"></div>
+      <button class="add-line-btn" onclick="addLine()">+ Add line</button>
+    </div>
+
+    <div class="section-label" onclick="toggleSection('sec-vat')">VAT <span class="section-arrow" id="arrow-sec-vat">▼</span></div>
+    <div class="section-body" id="sec-vat">
+      <div class="row-2">
+        <div class="field-group">
+          <label>VAT %</label>
+          <input type="number" id="vat-rate" value="0" min="0" max="100" oninput="update()">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" onclick="toggleSection('sec-payment')">Payment Details <span class="section-arrow" id="arrow-sec-payment">▼</span></div>
+    <div class="section-body" id="sec-payment">
+      <div class="field-group">
+        <label>Account Number</label>
+        <input type="text" id="bank-account" value="" oninput="update()">
       </div>
       <div class="field-group">
-        <label>KvK</label>
-        <input type="text" id="to-kvk" value="" oninput="update()">
+        <label>Account Name</label>
+        <input type="text" id="bank-holder" value="" oninput="update()">
       </div>
-    </div>
-
-    <div class="section-label">Invoice From (You)</div>
-    <div class="field-group">
-      <label>Name</label>
-      <input type="text" id="from-name" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Address Line 1</label>
-      <input type="text" id="from-addr1" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Address Line 2</label>
-      <input type="text" id="from-addr2" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Address Line 3</label>
-      <input type="text" id="from-addr3" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Email</label>
-      <input type="email" id="from-email" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Phone</label>
-      <input type="text" id="from-phone" value="" oninput="update()">
-    </div>
-
-    <div class="section-label">Subject</div>
-    <div class="field-group">
-      <label>Re:</label>
-      <input type="text" id="subject" value="" oninput="update()">
-    </div>
-
-    <div class="section-label">Line Items</div>
-    <div id="line-items-editor"></div>
-    <button class="add-line-btn" onclick="addLine()">+ Add line</button>
-
-    <div class="section-label">VAT</div>
-    <div class="row-2">
       <div class="field-group">
-        <label>VAT %</label>
-        <input type="number" id="vat-rate" value="0" min="0" max="100" oninput="update()">
+        <label>Account Holder Address</label>
+        <textarea id="bank-holder-addr" class="addr-4" rows="4" oninput="update()"></textarea>
       </div>
-    </div>
-
-    <div class="section-label">Payment Details</div>
-    <div class="field-group">
-      <label>Account Number</label>
-      <input type="text" id="bank-account" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Account Name</label>
-      <input type="text" id="bank-holder" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Account Holder Address</label>
-      <textarea id="bank-holder-addr" class="addr-4" rows="4" oninput="update()"></textarea>
-    </div>
-    <div class="field-group">
-      <label>Bank</label>
-      <input type="text" id="bank-name" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Payment Type</label>
-      <div class="bank-type-toggle">
-        <label><input type="radio" name="bank-type" value="IBAN" id="bank-type-iban" checked onchange="update()"> IBAN</label>
-        <label><input type="radio" name="bank-type" value="SWIFT" id="bank-type-swift" onchange="update()"> SWIFT / BIC</label>
+      <div class="field-group">
+        <label>Bank</label>
+        <input type="text" id="bank-name" value="" oninput="update()">
       </div>
-      <input type="text" id="bank-swift" placeholder="Enter IBAN or SWIFT / BIC number" value="" oninput="update()">
-    </div>
-    <div class="field-group">
-      <label>Bank Address</label>
-      <textarea id="bank-addr" class="addr-4" rows="4" oninput="update()"></textarea>
+      <div class="field-group">
+        <label>Payment Type</label>
+        <div class="bank-type-toggle">
+          <label><input type="radio" name="bank-type" value="IBAN" id="bank-type-iban" checked onchange="update()"> IBAN</label>
+          <label><input type="radio" name="bank-type" value="SWIFT" id="bank-type-swift" onchange="update()"> SWIFT / BIC</label>
+        </div>
+        <input type="text" id="bank-swift" placeholder="Enter IBAN or SWIFT / BIC number" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Bank Address</label>
+        <textarea id="bank-addr" class="addr-4" rows="4" oninput="update()"></textarea>
+      </div>
     </div>
 
   </aside>
@@ -867,7 +905,37 @@
     reader.readAsText(file);
   }
 
+  const SECTION_IDS = ['sec-number','sec-client','sec-from','sec-subject','sec-lines','sec-vat','sec-payment'];
+
+  function toggleSection(id) {
+    const body = document.getElementById(id);
+    const arrow = document.getElementById('arrow-' + id);
+    const isCollapsed = body.classList.toggle('collapsed');
+    arrow.classList.toggle('collapsed', isCollapsed);
+    // persist collapse state
+    const state = {};
+    SECTION_IDS.forEach(s => {
+      state[s] = document.getElementById(s).classList.contains('collapsed');
+    });
+    localStorage.setItem('invoice_sections_v2', JSON.stringify(state));
+  }
+
+  function restoreSections() {
+    const raw = localStorage.getItem('invoice_sections_v2');
+    if (!raw) return;
+    try {
+      const state = JSON.parse(raw);
+      SECTION_IDS.forEach(id => {
+        if (state[id]) {
+          document.getElementById(id).classList.add('collapsed');
+          document.getElementById('arrow-' + id).classList.add('collapsed');
+        }
+      });
+    } catch(e) {}
+  }
+
   (function init() {
+    restoreSections();
     const restored = loadState();
     if (!restored) {
       // Only set today's date when there's no saved state
