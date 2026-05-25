@@ -637,8 +637,8 @@
     const toEmail = g('to-email');
     const toVat   = g('to-vat');
     const toKvk   = g('to-kvk');
-    if (toPhone)  toAddrLines.push(toPhone);
     if (toEmail)  toAddrLines.push(toEmail);
+    if (toPhone)  toAddrLines.push(toPhone);
     if (toVat)    toAddrLines.push(toVat);
     if (toKvk)    toAddrLines.push(toKvk);
     document.getElementById('p-to-addr').innerHTML = toAddrLines.join('<br>');
