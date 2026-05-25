@@ -47,6 +47,9 @@ Enter a VAT percentage (e.g. `21`). Set to `0` for VAT-exempt invoices. The subt
 ### Payment Details
 Bank account number, account name, account holder address, bank name, IBAN or SWIFT/BIC, and bank address. Toggle between **IBAN** and **SWIFT / BIC** using the radio buttons — this changes the label on the PDF accordingly.
 
+### Sections
+All sections are collapsable, so after initial input you can collapse them if no further input or editing is needed.
+
 ---
 
 ## PDF Filename — How It Is Generated
