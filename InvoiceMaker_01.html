@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #1a1a1a;
+    --ink-muted: #555;
+    --ink-faint: #888;
+    --rule: #d0ccc4;
+    --surface: #f7f6f2;
+    --white: #ffffff;
+    --accent: #1a1a1a;
+    --accent-light: #f0ede8;
+    --red: #c0392b;
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--surface);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .app-shell {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    background: var(--white);
+    border-right: 1px solid var(--rule);
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 1.5rem 0 .6rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .field-group { margin-bottom: .75rem; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-bottom: .25rem;
+    font-weight: 500;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: .45rem .6rem;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--ink);
+    background: var(--white);
+  }
+
+  textarea { resize: vertical; min-height: 60px; }
+  textarea.addr-4 { min-height: 88px; }
+
+  /* IBAN / SWIFT radio toggle */
+  .bank-type-toggle {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .6rem;
+  }
+  .bank-type-toggle label {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    padding: .35rem .7rem;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--surface);
+    transition: all .15s;
+    margin-bottom: 0;
+  }
+  .bank-type-toggle input[type="radio"] {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    accent-color: var(--ink);
+  }
+  .bank-type-toggle label:has(input:checked) {
+    background: var(--ink);
+    color: var(--white);
+    border-color: var(--ink);
+  }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+
+  .line-item {
+    display: grid;
+    grid-template-columns: 1fr 70px 90px 28px;
+    gap: .4rem;
+    align-items: center;
+    margin-bottom: .5rem;
+  }
+
+  .line-item input { font-size: 12px; }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+    transition: color .15s;
+  }
+  .remove-btn:hover { color: var(--red); }
+
+  .add-line-btn {
+    background: none;
+    border: 1px dashed var(--rule);
+    border-radius: 5px;
+    color: var(--ink-muted);
+    font-size: 12px;
+    font-family: var(--font);
+    padding: .4rem .8rem;
+    cursor: pointer;
+    width: 100%;
+    margin-top: .25rem;
+    transition: all .15s;
+  }
+  .add-line-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--accent-light); }
+
+  .print-btn {
+    display: block;
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: .75rem 1rem;
+    background: var(--ink);
+    color: var(--white);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: .02em;
+    transition: opacity .15s;
+  }
+  .print-btn:hover { opacity: .85; }
+
+  .filename-preview {
+    margin-top: .75rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: .5rem .75rem;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    word-break: break-all;
+  }
+
+
+  .export-import-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: .5rem;
+    margin-top: .75rem;
+  }
+
+  .ei-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 34px;
+    padding: 0 .5rem;
+    background: var(--surface);
+    color: var(--ink-muted);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    transition: all .15s;
+  }
+  .ei-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--accent-light); }
+  .ei-import-label { display: flex; }
+  .ei-clear-btn:hover { border-color: var(--red); color: var(--red); background: #fdf0ef; }
+
+  /* ── INVOICE PREVIEW ── */
+  .preview-pane {
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .invoice-sheet {
+    background: var(--white);
+    width: 794px;
+    min-height: 1123px;
+    padding: 64px 72px;
+    box-shadow: 0 4px 40px rgba(0,0,0,.08);
+    position: relative;
+  }
+
+  .inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .inv-title {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .inv-meta { text-align: right; }
+  .inv-meta-row { display: flex; justify-content: flex-end; gap: .75rem; margin-bottom: .2rem; }
+  .inv-meta-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+  .inv-meta-value { font-size: 12px; font-weight: 500; font-family: var(--font); }
+
+  .inv-parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .party-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: .5rem;
+  }
+
+  .party-name { font-size: 14px; font-weight: 600; margin-bottom: .25rem; }
+  .party-line { font-size: 12px; color: var(--ink-muted); line-height: 1.6; }
+
+  .inv-subject {
+    background: var(--accent-light);
+    border-left: 3px solid var(--ink);
+    padding: .6rem 1rem;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    color: var(--ink);
+  }
+
+  .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+
+  .inv-table thead tr {
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .inv-table th {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: .5rem 0;
+    text-align: left;
+  }
+
+  .inv-table th.right { text-align: right; }
+  .inv-table th.center { text-align: center; }
+
+  .inv-table td {
+    font-size: 13px;
+    padding: .7rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  .inv-table td.right { text-align: right; font-family: var(--font); }
+  .inv-table td.center { text-align: center; font-family: var(--font); }
+
+  .inv-totals {
+    margin-top: 1rem;
+    margin-left: auto;
+    width: 280px;
+  }
+
+  .totals-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: .3rem 0;
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .totals-row.total-final {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 2px solid var(--ink);
+    border-top: 1px solid var(--ink);
+    padding: .5rem 0;
+    margin-top: .25rem;
+  }
+
+  .totals-row .mono { font-family: var(--font); }
+
+  .inv-payment {
+    position: absolute;
+    bottom: 64px;
+    left: 72px;
+    right: 72px;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .payment-title {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: .75rem;
+  }
+
+  .payment-grid {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: .25rem .5rem;
+  }
+
+  .payment-key {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+
+  .payment-val {
+    font-size: 11px;
+    color: var(--ink);
+    font-family: var(--mono);
+  }
+
+
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Invoice Editor</div>
+
+    <button class="print-btn" onclick="printInvoice()">↓ Save as PDF</button>
+    <div class="filename-preview" id="filename-preview"></div>
+    <div class="export-import-row">
+      <button class="ei-btn" onclick="exportData()">↑ Export</button>
+      <label class="ei-btn ei-import-label">↓ Import
+        <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(event)">
+      </label>
+      <button class="ei-btn ei-clear-btn" onclick="clearData()">✕ Clear</button>
+    </div>
+
+    <div class="section-label">Invoice Number &amp; Date</div>
+    <div class="row-2">
+      <div class="field-group">
+        <label>Number</label>
+        <input type="text" id="inv-number" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" id="inv-date" oninput="update()">
+      </div>
+    </div>
+
+    <div class="section-label">Invoice To (Client)</div>
+    <div class="field-group">
+      <label>Company Name</label>
+      <input type="text" id="to-name" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Address Line 1</label>
+      <input type="text" id="to-addr1" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Address Line 2</label>
+      <input type="text" id="to-addr2" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Country</label>
+      <input type="text" id="to-country" value="" oninput="update()">
+    </div>
+    <div class="row-2">
+      <div class="field-group">
+        <label>Email</label>
+        <input type="email" id="to-email" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Telephone</label>
+        <input type="text" id="to-phone" value="" oninput="update()">
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field-group">
+        <label>VAT NR</label>
+        <input type="text" id="to-vat" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>KvK</label>
+        <input type="text" id="to-kvk" value="" oninput="update()">
+      </div>
+    </div>
+
+    <div class="section-label">Invoice From (You)</div>
+    <div class="field-group">
+      <label>Name</label>
+      <input type="text" id="from-name" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Address Line 1</label>
+      <input type="text" id="from-addr1" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Address Line 2</label>
+      <input type="text" id="from-addr2" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Address Line 3</label>
+      <input type="text" id="from-addr3" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Email</label>
+      <input type="email" id="from-email" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Phone</label>
+      <input type="text" id="from-phone" value="" oninput="update()">
+    </div>
+
+    <div class="section-label">Subject</div>
+    <div class="field-group">
+      <label>Re:</label>
+      <input type="text" id="subject" value="" oninput="update()">
+    </div>
+
+    <div class="section-label">Line Items</div>
+    <div id="line-items-editor"></div>
+    <button class="add-line-btn" onclick="addLine()">+ Add line</button>
+
+    <div class="section-label">VAT</div>
+    <div class="row-2">
+      <div class="field-group">
+        <label>VAT %</label>
+        <input type="number" id="vat-rate" value="0" min="0" max="100" oninput="update()">
+      </div>
+    </div>
+
+    <div class="section-label">Payment Details</div>
+    <div class="field-group">
+      <label>Account Number</label>
+      <input type="text" id="bank-account" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Account Name</label>
+      <input type="text" id="bank-holder" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Account Holder Address</label>
+      <textarea id="bank-holder-addr" class="addr-4" rows="4" oninput="update()"></textarea>
+    </div>
+    <div class="field-group">
+      <label>Bank</label>
+      <input type="text" id="bank-name" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Payment Type</label>
+      <div class="bank-type-toggle">
+        <label><input type="radio" name="bank-type" value="IBAN" id="bank-type-iban" checked onchange="update()"> IBAN</label>
+        <label><input type="radio" name="bank-type" value="SWIFT" id="bank-type-swift" onchange="update()"> SWIFT / BIC</label>
+      </div>
+      <input type="text" id="bank-swift" placeholder="Enter IBAN or SWIFT / BIC number" value="" oninput="update()">
+    </div>
+    <div class="field-group">
+      <label>Bank Address</label>
+      <textarea id="bank-addr" class="addr-4" rows="4" oninput="update()"></textarea>
+    </div>
+
+  </aside>
+
+  <!-- PREVIEW -->
+  <main class="preview-pane">
+    <div class="invoice-sheet" id="invoice-sheet">
+
+      <div class="inv-header">
+        <div class="inv-title">INVOICE</div>
+        <div class="inv-meta">
+          <div class="inv-meta-row">
+            <span class="inv-meta-label">Invoice Number</span>
+            <span class="inv-meta-value" id="p-number">—</span>
+          </div>
+          <div class="inv-meta-row">
+            <span class="inv-meta-label">Date</span>
+            <span class="inv-meta-value" id="p-date">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="inv-parties">
+        <div>
+          <div class="party-label">Invoice To</div>
+          <div class="party-name" id="p-to-name"></div>
+          <div class="party-line" id="p-to-addr"></div>
+        </div>
+        <div>
+          <div class="party-label">Invoice From</div>
+          <div class="party-name" id="p-from-name"></div>
+          <div class="party-line" id="p-from-addr"></div>
+        </div>
+      </div>
+
+      <div class="inv-subject" id="p-subject"></div>
+
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="center" style="width:80px">Qty</th>
+            <th class="right" style="width:100px">Unit Price</th>
+            <th class="right" style="width:110px">Total</th>
+          </tr>
+        </thead>
+        <tbody id="p-lines"></tbody>
+      </table>
+
+      <div id="p-totals-wrap">
+        <div class="inv-totals" id="p-totals"></div>
+      </div>
+
+      <div class="inv-payment">
+        <div class="payment-title">Payment Details</div>
+        <div class="payment-grid" id="p-payment"></div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<script>
+  const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let lines = [{ desc: '', qty: 1, price: 0 }];
+
+  function fmt(n) {
+    return '€\u00a0' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function fmtDate(val) {
+    if (!val) return '—';
+    const [y, m, d] = val.split('-');
+    return `${String(parseInt(d,10)).padStart(2,'0')}-${String(parseInt(m,10)).padStart(2,'0')}-${y}`;
+  }
+
+  function getMonthYear() {
+    const d = document.getElementById('inv-date').value;
+    if (!d) return { month: '', year: '', slug: '' };
+    const [y, m] = d.split('-');
+    const month = MONTHS_EN[parseInt(m, 10) - 1];
+    return { month, year: y, slug: month + '_' + y };
+  }
+
+  function getFromName() {
+    return document.getElementById('from-name').value.trim().replace(/\s+/g, '_');
+  }
+
+  function buildFilename() {
+    const name = getFromName();
+    const { slug } = getMonthYear();
+    if (!name || !slug) return 'invoice.pdf';
+    return `Invoice_${name}_${slug}.pdf`;
+  }
+
+  function renderLineEditor() {
+    const el = document.getElementById('line-items-editor');
+    el.innerHTML = '';
+    lines.forEach((ln, i) => {
+      const row = document.createElement('div');
+      row.className = 'line-item';
+      row.innerHTML = `
+        <input type="text" placeholder="Description" value="${ln.desc}" oninput="lines[${i}].desc=this.value;renderInvoice()">
+        <input type="number" placeholder="Qty" value="${ln.qty}" min="0" step="1" oninput="lines[${i}].qty=parseFloat(this.value)||0;renderInvoice()">
+        <input type="number" placeholder="Price" value="${ln.price}" min="0" step="0.01" oninput="lines[${i}].price=parseFloat(this.value)||0;renderInvoice()">
+        <button class="remove-btn" onclick="removeLine(${i})" title="Remove">&times;</button>
+      `;
+      el.appendChild(row);
+    });
+  }
+
+  function addLine() {
+    lines.push({ desc: '', qty: 1, price: 0 });
+    renderLineEditor();
+    renderInvoice();
+  }
+
+  function removeLine(i) {
+    if (lines.length === 1) return;
+    lines.splice(i, 1);
+    renderLineEditor();
+    renderInvoice();
+  }
+
+  function g(id) { return document.getElementById(id).value.trim(); }
+
+  function renderInvoice() {
+    document.getElementById('p-number').textContent = g('inv-number') || '—';
+    document.getElementById('p-date').textContent = fmtDate(g('inv-date'));
+
+    document.getElementById('p-to-name').textContent = g('to-name');
+    const toAddrLines = [g('to-addr1'), g('to-addr2'), g('to-country')].filter(Boolean);
+    const toPhone = g('to-phone');
+    const toEmail = g('to-email');
+    const toVat   = g('to-vat');
+    const toKvk   = g('to-kvk');
+    if (toEmail)  toAddrLines.push(toEmail);
+    if (toPhone)  toAddrLines.push(toPhone);
+    if (toVat)    toAddrLines.push(toVat);
+    if (toKvk)    toAddrLines.push(toKvk);
+    document.getElementById('p-to-addr').innerHTML = toAddrLines.join('<br>');
+
+    document.getElementById('p-from-name').textContent = g('from-name');
+    const fromLines = [g('from-addr1'), g('from-addr2'), g('from-addr3'), g('from-email'), g('from-phone')];
+    document.getElementById('p-from-addr').innerHTML = fromLines.filter(Boolean).join('<br>');
+
+    const subjectEl = document.getElementById('p-subject');
+    const subjectVal = g('subject');
+    subjectEl.textContent = subjectVal ? 'Re: ' + subjectVal : '';
+    subjectEl.style.display = subjectVal ? '' : 'none';
+
+    const tbody = document.getElementById('p-lines');
+    tbody.innerHTML = '';
+    let subtotal = 0;
+    lines.forEach(ln => {
+      const total = (ln.qty || 0) * (ln.price || 0);
+      subtotal += total;
+      const tr = document.createElement('tr');
+      const tdDesc = document.createElement('td');
+      tdDesc.textContent = ln.desc || '';
+      const tdQty = document.createElement('td');
+      tdQty.className = 'center';
+      tdQty.textContent = ln.qty;
+      const tdPrice = document.createElement('td');
+      tdPrice.className = 'right';
+      tdPrice.textContent = fmt(ln.price || 0);
+      const tdTotal = document.createElement('td');
+      tdTotal.className = 'right';
+      tdTotal.textContent = fmt(total);
+      tr.appendChild(tdDesc);
+      tr.appendChild(tdQty);
+      tr.appendChild(tdPrice);
+      tr.appendChild(tdTotal);
+      tbody.appendChild(tr);
+    });
+
+    const vatRate = parseFloat(document.getElementById('vat-rate').value) || 0;
+    const vat = subtotal * vatRate / 100;
+    const grand = subtotal + vat;
+
+    document.getElementById('p-totals').innerHTML = `
+      <div class="totals-row">
+        <span>Subtotal (excl. VAT)</span>
+        <span class="mono">${fmt(subtotal)}</span>
+      </div>
+      <div class="totals-row">
+        <span>VAT (${vatRate}%)</span>
+        <span class="mono">${fmt(vat)}</span>
+      </div>
+      <div class="totals-row total-final">
+        <span>Total Due</span>
+        <span class="mono">${fmt(grand)}</span>
+      </div>
+    `;
+
+    const bankTypeEl = document.querySelector('input[name="bank-type"]:checked');
+    const bankTypeLabel = bankTypeEl ? bankTypeEl.value : 'IBAN';
+
+    const payRows = [
+      ['Account Number', g('bank-account')],
+      ['Account Name', g('bank-holder')],
+      ['Account Holder Address', document.getElementById('bank-holder-addr').value.trim()],
+      ['Bank', g('bank-name')],
+      [bankTypeLabel, g('bank-swift')],
+      ['Bank Address', document.getElementById('bank-addr').value.trim()],
+    ].filter(([, v]) => v);
+    document.getElementById('p-payment').innerHTML = payRows.map(([k, v]) =>
+      `<span class="payment-key">${k}:</span><span class="payment-val">${v}</span>`
+    ).join('');
+
+    document.getElementById('filename-preview').textContent = buildFilename();
+    saveState();
+  }
+
+  function update() { renderInvoice(); }
+
+  function printInvoice() {
+    const fn = buildFilename();
+    const btn = document.querySelector('.print-btn');
+    btn.textContent = 'Generating…';
+    btn.disabled = true;
+    const el = document.getElementById('invoice-sheet');
+    html2pdf().set({
+      margin: 0,
+      filename: fn,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' }
+    }).from(el).save().then(() => {
+      btn.textContent = '↓ Save as PDF';
+      btn.disabled = false;
+    });
+  }
+
+  const FIELDS = ['inv-number','inv-date','to-name','to-addr1','to-addr2','to-country','to-phone','to-email','to-vat','to-kvk',
+    'from-name','from-addr1','from-addr2','from-addr3','from-email','from-phone',
+    'subject','vat-rate','bank-account','bank-holder','bank-holder-addr',
+    'bank-name','bank-swift','bank-addr'];
+
+  function saveState() {
+    const data = {};
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    const bankTypeEl = document.querySelector('input[name="bank-type"]:checked');
+    data['__bank-type'] = bankTypeEl ? bankTypeEl.value : 'IBAN';
+    data['__lines'] = lines;
+    localStorage.setItem('invoice_generator_v2_user', JSON.stringify(data));
+  }
+
+  function loadState() {
+    const raw = localStorage.getItem('invoice_generator_v2_user');
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      FIELDS.forEach(id => {
+        if (data[id] !== undefined) {
+          const el = document.getElementById(id);
+          if (el) el.value = data[id];
+        }
+      });
+      if (data['__bank-type']) {
+        const radioEl = document.querySelector(`input[name="bank-type"][value="${data['__bank-type']}"]`);
+        if (radioEl) radioEl.checked = true;
+      }
+      if (Array.isArray(data['__lines']) && data['__lines'].length) {
+        lines = data['__lines'];
+      }
+      return true;
+    } catch(e) { return false; }
+  }
+
+
+
+  function clearData() {
+    if (!confirm('Clear all invoice data? This cannot be undone.')) return;
+    localStorage.removeItem('invoice_generator_v2_user');
+    lines = [{ desc: '', qty: 1, price: 0 }];
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const ibanEl = document.querySelector('input[name="bank-type"][value="IBAN"]');
+    if (ibanEl) ibanEl.checked = true;
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    document.getElementById('inv-date').value = `${y}-${m}-${d}`;
+    renderLineEditor();
+    renderInvoice();
+  }
+
+  function exportData() {
+    const raw = localStorage.getItem('invoice_generator_v2_user');
+    if (!raw) { alert('Nothing to export yet — fill in some fields first.'); return; }
+    const blob = new Blob([raw], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const name = getFromName() || 'invoice';
+    a.download = 'invoice_data_' + name + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        localStorage.setItem('invoice_generator_v2_user', JSON.stringify(data));
+        loadState();
+        renderLineEditor();
+        renderInvoice();
+      } catch(err) {
+        alert('Could not read file — make sure it is a valid invoice data export.');
+      }
+      // Reset input so same file can be re-imported if needed
+      document.getElementById('import-file-input').value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  (function init() {
+    const restored = loadState();
+    if (!restored) {
+      // Only set today's date when there's no saved state
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('inv-date').value = `${y}-${m}-${d}`;
+    }
+    renderLineEditor();
+    renderInvoice();
+  })();
+</script>
+
+</body>
+</html>
