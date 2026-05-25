@@ -122,7 +122,6 @@
   textarea { resize: vertical; min-height: 60px; }
   textarea.addr-4 { min-height: 88px; }
 
-  /* IBAN / SWIFT radio toggle */
   .bank-type-toggle {
     display: flex;
     gap: .5rem;
@@ -227,7 +226,6 @@
     word-break: break-all;
   }
 
-
   .export-import-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -259,7 +257,6 @@
   .ei-import-label { display: flex; }
   .ei-clear-btn:hover { border-color: var(--red); color: var(--red); background: #fdf0ef; }
 
-  /* ── INVOICE PREVIEW ── */
   .preview-pane {
     padding: 3rem 2rem;
     display: flex;
@@ -418,8 +415,6 @@
     color: var(--ink);
     font-family: var(--mono);
   }
-
-
 </style>
 </head>
 <body>
@@ -430,17 +425,17 @@
   <aside class="sidebar">
     <div class="sidebar-title">Invoice Editor</div>
 
-    <button class="print-btn" onclick="printInvoice()">↓ Save as PDF</button>
+    <button class="print-btn" onclick="printInvoice()">&#8595; Save as PDF</button>
     <div class="filename-preview" id="filename-preview"></div>
     <div class="export-import-row">
-      <button class="ei-btn" onclick="exportData()">↑ Export</button>
-      <label class="ei-btn ei-import-label">↓ Import
+      <button class="ei-btn" onclick="exportData()">&#8593; Export</button>
+      <label class="ei-btn ei-import-label">&#8595; Import
         <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(event)">
       </label>
-      <button class="ei-btn ei-clear-btn" onclick="clearData()">✕ Clear</button>
+      <button class="ei-btn ei-clear-btn" onclick="clearData()">&#10005; Clear</button>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-number')">Invoice Number &amp; Date <span class="section-arrow" id="arrow-sec-number">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-number')">Invoice Number &amp; Date <span class="section-arrow" id="arrow-sec-number">&#9660;</span></div>
     <div class="section-body" id="sec-number">
       <div class="row-2">
         <div class="field-group">
@@ -454,7 +449,7 @@
       </div>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-client')">Invoice To (Client) <span class="section-arrow" id="arrow-sec-client">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-client')">Invoice To (Client) <span class="section-arrow" id="arrow-sec-client">&#9660;</span></div>
     <div class="section-body" id="sec-client">
       <div class="field-group">
         <label>Company Name</label>
@@ -494,7 +489,7 @@
       </div>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-from')">Invoice From (You) <span class="section-arrow" id="arrow-sec-from">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-from')">Invoice From (You) <span class="section-arrow" id="arrow-sec-from">&#9660;</span></div>
     <div class="section-body" id="sec-from">
       <div class="field-group">
         <label>Name</label>
@@ -522,7 +517,7 @@
       </div>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-subject')">Subject <span class="section-arrow" id="arrow-sec-subject">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-subject')">Subject <span class="section-arrow" id="arrow-sec-subject">&#9660;</span></div>
     <div class="section-body" id="sec-subject">
       <div class="field-group">
         <label>Re:</label>
@@ -530,13 +525,13 @@
       </div>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-lines')">Line Items <span class="section-arrow" id="arrow-sec-lines">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-lines')">Line Items <span class="section-arrow" id="arrow-sec-lines">&#9660;</span></div>
     <div class="section-body" id="sec-lines">
       <div id="line-items-editor"></div>
       <button class="add-line-btn" onclick="addLine()">+ Add line</button>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-vat')">VAT <span class="section-arrow" id="arrow-sec-vat">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-vat')">VAT <span class="section-arrow" id="arrow-sec-vat">&#9660;</span></div>
     <div class="section-body" id="sec-vat">
       <div class="row-2">
         <div class="field-group">
@@ -546,7 +541,7 @@
       </div>
     </div>
 
-    <div class="section-label" onclick="toggleSection('sec-payment')">Payment Details <span class="section-arrow" id="arrow-sec-payment">▼</span></div>
+    <div class="section-label" onclick="toggleSection('sec-payment')">Payment Details <span class="section-arrow" id="arrow-sec-payment">&#9660;</span></div>
     <div class="section-body" id="sec-payment">
       <div class="field-group">
         <label>Account Number</label>
@@ -589,11 +584,11 @@
         <div class="inv-meta">
           <div class="inv-meta-row">
             <span class="inv-meta-label">Invoice Number</span>
-            <span class="inv-meta-value" id="p-number">—</span>
+            <span class="inv-meta-value" id="p-number">&mdash;</span>
           </div>
           <div class="inv-meta-row">
             <span class="inv-meta-label">Date</span>
-            <span class="inv-meta-value" id="p-date">—</span>
+            <span class="inv-meta-value" id="p-date">&mdash;</span>
           </div>
         </div>
       </div>
@@ -645,11 +640,11 @@
   let lines = [{ desc: '', qty: 1, price: 0 }];
 
   function fmt(n) {
-    return '€\u00a0' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return '\u20ac\u00a0' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
   function fmtDate(val) {
-    if (!val) return '—';
+    if (!val) return '\u2014';
     const [y, m, d] = val.split('-');
     return `${String(parseInt(d,10)).padStart(2,'0')}-${String(parseInt(m,10)).padStart(2,'0')}-${y}`;
   }
@@ -668,9 +663,9 @@
 
   function buildFilename() {
     const name = getFromName();
-    const { slug } = getMonthYear();
-    if (!name || !slug) return 'invoice.pdf';
-    return `Invoice_${name}_${slug}.pdf`;
+    const { month, year } = getMonthYear();
+    if (!name || !month) return 'invoice.pdf';
+    return `${name}_${month}_${year}.pdf`;
   }
 
   function renderLineEditor() {
@@ -705,7 +700,7 @@
   function g(id) { return document.getElementById(id).value.trim(); }
 
   function renderInvoice() {
-    document.getElementById('p-number').textContent = g('inv-number') || '—';
+    document.getElementById('p-number').textContent = g('inv-number') || '\u2014';
     document.getElementById('p-date').textContent = fmtDate(g('inv-date'));
 
     document.getElementById('p-to-name').textContent = g('to-name');
@@ -797,7 +792,7 @@
   function printInvoice() {
     const fn = buildFilename();
     const btn = document.querySelector('.print-btn');
-    btn.textContent = 'Generating…';
+    btn.textContent = 'Generating\u2026';
     btn.disabled = true;
     const el = document.getElementById('invoice-sheet');
     html2pdf().set({
@@ -807,7 +802,7 @@
       html2canvas: { scale: 2, useCORS: true, letterRendering: true },
       jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' }
     }).from(el).save().then(() => {
-      btn.textContent = '↓ Save as PDF';
+      btn.textContent = '\u2193 Save as PDF';
       btn.disabled = false;
     });
   }
@@ -851,8 +846,6 @@
     } catch(e) { return false; }
   }
 
-
-
   function clearData() {
     if (!confirm('Clear all invoice data? This cannot be undone.')) return;
     localStorage.removeItem('invoice_generator_v2_user');
@@ -874,7 +867,7 @@
 
   function exportData() {
     const raw = localStorage.getItem('invoice_generator_v2_user');
-    if (!raw) { alert('Nothing to export yet — fill in some fields first.'); return; }
+    if (!raw) { alert('Nothing to export yet \u2014 fill in some fields first.'); return; }
     const blob = new Blob([raw], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -897,9 +890,8 @@
         renderLineEditor();
         renderInvoice();
       } catch(err) {
-        alert('Could not read file — make sure it is a valid invoice data export.');
+        alert('Could not read file \u2014 make sure it is a valid invoice data export.');
       }
-      // Reset input so same file can be re-imported if needed
       document.getElementById('import-file-input').value = '';
     };
     reader.readAsText(file);
@@ -912,7 +904,6 @@
     const arrow = document.getElementById('arrow-' + id);
     const isCollapsed = body.classList.toggle('collapsed');
     arrow.classList.toggle('collapsed', isCollapsed);
-    // persist collapse state
     const state = {};
     SECTION_IDS.forEach(s => {
       state[s] = document.getElementById(s).classList.contains('collapsed');
@@ -938,7 +929,6 @@
     restoreSections();
     const restored = loadState();
     if (!restored) {
-      // Only set today's date when there's no saved state
       const today = new Date();
       const y = today.getFullYear();
       const m = String(today.getMonth() + 1).padStart(2, '0');
