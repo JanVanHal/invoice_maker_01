@@ -406,6 +406,26 @@
       <label>Country</label>
       <input type="text" id="to-country" value="Netherlands" oninput="update()">
     </div>
+    <div class="row-2">
+      <div class="field-group">
+        <label>Telephone</label>
+        <input type="text" id="to-phone" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>Email</label>
+        <input type="email" id="to-email" value="" oninput="update()">
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field-group">
+        <label>VAT NR</label>
+        <input type="text" id="to-vat" value="" oninput="update()">
+      </div>
+      <div class="field-group">
+        <label>KvK</label>
+        <input type="text" id="to-kvk" value="" oninput="update()">
+      </div>
+    </div>
 
     <div class="section-label">Invoice From (You)</div>
     <div class="field-group">
@@ -612,8 +632,16 @@
     document.getElementById('p-date').textContent = fmtDate(g('inv-date'));
 
     document.getElementById('p-to-name').textContent = g('to-name');
-    document.getElementById('p-to-addr').innerHTML =
-      [g('to-addr1'), g('to-addr2'), g('to-country')].filter(Boolean).join('<br>');
+    const toAddrLines = [g('to-addr1'), g('to-addr2'), g('to-country')].filter(Boolean);
+    const toPhone = g('to-phone');
+    const toEmail = g('to-email');
+    const toVat   = g('to-vat');
+    const toKvk   = g('to-kvk');
+    if (toPhone)  toAddrLines.push('Tel: ' + toPhone);
+    if (toEmail)  toAddrLines.push('Email: ' + toEmail);
+    if (toVat)    toAddrLines.push('VAT NR: ' + toVat);
+    if (toKvk)    toAddrLines.push('KvK: ' + toKvk);
+    document.getElementById('p-to-addr').innerHTML = toAddrLines.join('<br>');
 
     document.getElementById('p-from-name').textContent = g('from-name');
     const fromLines = [g('from-addr1'), g('from-addr2'), g('from-addr3'), g('from-email'), g('from-phone')];
@@ -707,7 +735,7 @@
     });
   }
 
-  const FIELDS = ['inv-number','inv-date','to-name','to-addr1','to-addr2','to-country',
+  const FIELDS = ['inv-number','inv-date','to-name','to-addr1','to-addr2','to-country','to-phone','to-email','to-vat','to-kvk',
     'from-name','from-addr1','from-addr2','from-addr3','from-email','from-phone',
     'subject','vat-rate','bank-account','bank-holder','bank-holder-addr',
     'bank-name','bank-swift','bank-addr'];
