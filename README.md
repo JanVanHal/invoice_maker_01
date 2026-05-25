@@ -6,7 +6,8 @@ A single-file HTML invoice tool. No installation, no login, no internet required
 
 ## Getting Started
 
-1. Download `index.html`Or use the link https://janvanhal.github.io/invoice_maker_01/ and Bookmark.
+1. - Download the file from : https://shorturl.at/iHJGX 
+   - Or use the link https://janvanhal.github.io/invoice_maker_01/ and Bookmark.
 2. Open it in your browser (double-click or drag into a browser window)
 3. Fill in the fields on the left — the invoice preview updates live on the right
 4. Click **↓ Save as PDF** when ready
