@@ -41,6 +41,8 @@ Each line has a description, quantity, and unit price. The total per line and th
 
 Use **+ Add line** to add more rows. Use **×** to remove a row (minimum one line is kept).
 
+Max of 8x line items will fit in the current layout !!
+
 ### VAT
 Enter a VAT percentage (e.g. `21`). Set to `0` for VAT-exempt invoices. The subtotal, VAT amount, and total due are shown separately.
 
