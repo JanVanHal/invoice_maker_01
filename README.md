@@ -1,4 +1,4 @@
-# Invoice Generator
+# Invoice Maker
 
 A single-file HTML invoice tool. No installation, no login, no internet required. Open the file in any browser and start invoicing.
 
