@@ -206,7 +206,7 @@
 
   .export-import-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: .5rem;
     margin-top: .75rem;
   }
@@ -229,6 +229,7 @@
   }
   .ei-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--accent-light); }
   .ei-import-label { display: block; }
+  .ei-clear-btn:hover { border-color: var(--red); color: var(--red); background: #fdf0ef; }
 
   /* ── INVOICE PREVIEW ── */
   .preview-pane {
@@ -408,6 +409,7 @@
       <label class="ei-btn ei-import-label">↓ Import data
         <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(event)">
       </label>
+      <button class="ei-btn ei-clear-btn" onclick="clearData()">✕ Clear</button>
     </div>
 
     <div class="section-label">Invoice Number &amp; Date</div>
@@ -807,6 +809,26 @@
     } catch(e) { return false; }
   }
 
+
+
+  function clearData() {
+    if (!confirm('Clear all invoice data? This cannot be undone.')) return;
+    localStorage.removeItem('invoice_generator_v1_user');
+    lines = [{ desc: '', qty: 1, price: 0 }];
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const ibanEl = document.querySelector('input[name="bank-type"][value="IBAN"]');
+    if (ibanEl) ibanEl.checked = true;
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    document.getElementById('inv-date').value = `${y}-${m}-${d}`;
+    renderLineEditor();
+    renderInvoice();
+  }
 
   function exportData() {
     const raw = localStorage.getItem('invoice_generator_v1_user');
