@@ -431,19 +431,19 @@
     <div class="section-label">Invoice To (Client)</div>
     <div class="field-group">
       <label>Company Name</label>
-      <input type="text" id="to-name" value="Coöperatie Sevesto U.A." oninput="update()">
+      <input type="text" id="to-name" value="" oninput="update()">
     </div>
     <div class="field-group">
       <label>Address Line 1</label>
-      <input type="text" id="to-addr1" value="Ligusterbaan 1-2.08" oninput="update()">
+      <input type="text" id="to-addr1" value="" oninput="update()">
     </div>
     <div class="field-group">
       <label>Address Line 2</label>
-      <input type="text" id="to-addr2" value="2908 LW Capelle AD IJssel" oninput="update()">
+      <input type="text" id="to-addr2" value="" oninput="update()">
     </div>
     <div class="field-group">
       <label>Country</label>
-      <input type="text" id="to-country" value="Netherlands" oninput="update()">
+      <input type="text" id="to-country" value="" oninput="update()">
     </div>
     <div class="row-2">
       <div class="field-group">
@@ -788,11 +788,11 @@
     const bankTypeEl = document.querySelector('input[name="bank-type"]:checked');
     data['__bank-type'] = bankTypeEl ? bankTypeEl.value : 'IBAN';
     data['__lines'] = lines;
-    localStorage.setItem('invoice_generator_v1_user', JSON.stringify(data));
+    localStorage.setItem('invoice_generator_v2_user', JSON.stringify(data));
   }
 
   function loadState() {
-    const raw = localStorage.getItem('invoice_generator_v1_user');
+    const raw = localStorage.getItem('invoice_generator_v2_user');
     if (!raw) return false;
     try {
       const data = JSON.parse(raw);
@@ -817,7 +817,7 @@
 
   function clearData() {
     if (!confirm('Clear all invoice data? This cannot be undone.')) return;
-    localStorage.removeItem('invoice_generator_v1_user');
+    localStorage.removeItem('invoice_generator_v2_user');
     lines = [{ desc: '', qty: 1, price: 0 }];
     FIELDS.forEach(id => {
       const el = document.getElementById(id);
@@ -835,7 +835,7 @@
   }
 
   function exportData() {
-    const raw = localStorage.getItem('invoice_generator_v1_user');
+    const raw = localStorage.getItem('invoice_generator_v2_user');
     if (!raw) { alert('Nothing to export yet — fill in some fields first.'); return; }
     const blob = new Blob([raw], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -854,7 +854,7 @@
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        localStorage.setItem('invoice_generator_v1_user', JSON.stringify(data));
+        localStorage.setItem('invoice_generator_v2_user', JSON.stringify(data));
         loadState();
         renderLineEditor();
         renderInvoice();
