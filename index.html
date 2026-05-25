@@ -203,6 +203,33 @@
     word-break: break-all;
   }
 
+
+  .export-import-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    margin-top: .75rem;
+  }
+
+  .ei-btn {
+    display: block;
+    width: 100%;
+    padding: .55rem .75rem;
+    background: var(--surface);
+    color: var(--ink-muted);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: .02em;
+    transition: all .15s;
+  }
+  .ei-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--accent-light); }
+  .ei-import-label { display: block; }
+
   /* ── INVOICE PREVIEW ── */
   .preview-pane {
     padding: 3rem 2rem;
@@ -376,6 +403,12 @@
 
     <button class="print-btn" onclick="printInvoice()">↓ Save as PDF</button>
     <div class="filename-preview" id="filename-preview"></div>
+    <div class="export-import-row">
+      <button class="ei-btn" onclick="exportData()">↑ Export data</button>
+      <label class="ei-btn ei-import-label">↓ Import data
+        <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importData(event)">
+      </label>
+    </div>
 
     <div class="section-label">Invoice Number &amp; Date</div>
     <div class="row-2">
@@ -772,6 +805,40 @@
       }
       return true;
     } catch(e) { return false; }
+  }
+
+
+  function exportData() {
+    const raw = localStorage.getItem('invoice_generator_v1_user');
+    if (!raw) { alert('Nothing to export yet — fill in some fields first.'); return; }
+    const blob = new Blob([raw], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const name = getFromName() || 'invoice';
+    a.download = 'invoice_data_' + name + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        localStorage.setItem('invoice_generator_v1_user', JSON.stringify(data));
+        loadState();
+        renderLineEditor();
+        renderInvoice();
+      } catch(err) {
+        alert('Could not read file — make sure it is a valid invoice data export.');
+      }
+      // Reset input so same file can be re-imported if needed
+      document.getElementById('import-file-input').value = '';
+    };
+    reader.readAsText(file);
   }
 
   (function init() {
