@@ -9,7 +9,7 @@ A single-file HTML invoice tool. No installation, no login, no internet required
 1. 
 
    * Download the file from : https://shorturl.at/8nhC0
-   * Or use the link https://janvanhal.github.io/invoice\_maker\_01/ and Bookmark.
+   * Or use the link https://janvanhal.github.io/invoice_maker_01/ and Bookmark.
 2. Open it in your browser (double-click or drag into a browser window)
 3. Fill in the fields on the left — the invoice preview updates live on the right
 4. Click **↓ Save as PDF** when ready
@@ -41,25 +41,25 @@ Fields for the receiving party:
 
 Any field left blank will not appear on the PDF.
 
-\*\*Address Book:\*\*
+Address Book:
 
-\- \*\*Save to Address Book\*\*: Saves the currently filled client details under the entered Company Name.
+Save to Address Book: Saves the currently filled client details under the entered Company Name.
 
-\- \*\*Dropdown Selector\*\*: Choose a previously saved client from the list to auto-fill the fields.
+Dropdown Selector: Choose a previously saved client from the list to auto-fill the fields.
 
-\- \*\*× Button\*\*: Deletes the currently selected client from your address book.
+X-Button: Deletes the currently selected client from your address book.
 
 ### Invoice From (You)
 
 Your own details: name, up to three address lines, email, and phone.
 
-\*\*Saved Senders:\*\*
+Saved Senders:
 
-\- \*\*Save to Sender Profiles\*\*: Saves your current sender information under your name.
+Save to Sender Profiles: Saves your current sender information under your name.
 
-\- \*\*Dropdown Selector\*\*: Switch between different saved sender profiles.
+Dropdown Selector: Switch between different saved sender profiles.
 
-\- \*\*× Button\*\*: Deletes the currently selected sender profile.
+X-Button: Deletes the currently selected sender profile.
 
 ### Subject
 
