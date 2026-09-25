@@ -181,7 +181,7 @@
   }
   .remove-btn:hover { color: var(--red); }
 
-  .add-line-btn {
+  .add-line-btn, .sec-action-btn {
     background: none;
     border: 1px dashed var(--rule);
     border-radius: 5px;
@@ -194,7 +194,13 @@
     margin-top: .25rem;
     transition: all .15s;
   }
-  .add-line-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--accent-light); }
+  .add-line-btn:hover, .sec-action-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--accent-light); }
+
+  .address-book-controls {
+    display: flex;
+    gap: .4rem;
+    margin-bottom: .75rem;
+  }
 
   .print-btn {
     display: block;
@@ -452,6 +458,15 @@
     <div class="section-label" onclick="toggleSection('sec-client')">Invoice To (Client) <span class="section-arrow" id="arrow-sec-client">&#9660;</span></div>
     <div class="section-body" id="sec-client">
       <div class="field-group">
+        <label>Address Book</label>
+        <div class="address-book-controls">
+          <select id="address-book-select" onchange="loadRecipient(this.value)">
+            <option value="">-- Select Saved Recipient --</option>
+          </select>
+          <button class="remove-btn" onclick="deleteRecipient()" title="Delete Selected Recipient">&times;</button>
+        </div>
+      </div>
+      <div class="field-group">
         <label>Company Name</label>
         <input type="text" id="to-name" value="" oninput="update()">
       </div>
@@ -487,10 +502,20 @@
           <input type="text" id="to-kvk" value="" oninput="update()">
         </div>
       </div>
+      <button class="sec-action-btn" onclick="saveRecipient()">+ Save to Address Book</button>
     </div>
 
     <div class="section-label" onclick="toggleSection('sec-from')">Invoice From (You) <span class="section-arrow" id="arrow-sec-from">&#9660;</span></div>
     <div class="section-body" id="sec-from">
+      <div class="field-group">
+        <label>Saved Senders</label>
+        <div class="address-book-controls">
+          <select id="sender-book-select" onchange="loadSender(this.value)">
+            <option value="">-- Select Saved Sender --</option>
+          </select>
+          <button class="remove-btn" onclick="deleteSender()" title="Delete Selected Sender">&times;</button>
+        </div>
+      </div>
       <div class="field-group">
         <label>Name</label>
         <input type="text" id="from-name" value="" oninput="update()">
@@ -515,6 +540,7 @@
         <label>Phone</label>
         <input type="text" id="from-phone" value="" oninput="update()">
       </div>
+      <button class="sec-action-btn" onclick="saveSender()">+ Save to Sender Profiles</button>
     </div>
 
     <div class="section-label" onclick="toggleSection('sec-subject')">Subject <span class="section-arrow" id="arrow-sec-subject">&#9660;</span></div>
@@ -636,8 +662,12 @@
 
 <script>
   const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const RECIPIENT_FIELDS = ['to-name', 'to-addr1', 'to-addr2', 'to-country', 'to-email', 'to-phone', 'to-vat', 'to-kvk'];
+  const SENDER_FIELDS = ['from-name', 'from-addr1', 'from-addr2', 'from-addr3', 'from-email', 'from-phone'];
 
   let lines = [{ desc: '', qty: 1, price: 0 }];
+  let addressBook = [];
+  let senderBook = [];
 
   function fmt(n) {
     return '\u20ac\u00a0' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -698,6 +728,136 @@
   }
 
   function g(id) { return document.getElementById(id).value.trim(); }
+
+  /* RECIPIENT ADDRESS BOOK */
+  function loadAddressBook() {
+    const raw = localStorage.getItem('invoice_address_book');
+    if (raw) {
+      try { addressBook = JSON.parse(raw); } catch(e) { addressBook = []; }
+    }
+    renderAddressBookOptions();
+  }
+
+  function saveAddressBook() {
+    localStorage.setItem('invoice_address_book', JSON.stringify(addressBook));
+    renderAddressBookOptions();
+  }
+
+  function renderAddressBookOptions() {
+    const select = document.getElementById('address-book-select');
+    select.innerHTML = '<option value="">-- Select Saved Recipient --</option>';
+    addressBook.forEach((rec, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = rec['to-name'] || `Recipient #${idx + 1}`;
+      select.appendChild(opt);
+    });
+  }
+
+  function saveRecipient() {
+    const name = g('to-name');
+    if (!name) {
+      alert('Please enter a Company Name before saving.');
+      return;
+    }
+    const entry = {};
+    RECIPIENT_FIELDS.forEach(id => entry[id] = g(id));
+    
+    const existingIndex = addressBook.findIndex(r => r['to-name'].toLowerCase() === name.toLowerCase());
+    if (existingIndex >= 0) {
+      addressBook[existingIndex] = entry;
+    } else {
+      addressBook.push(entry);
+    }
+    saveAddressBook();
+    document.getElementById('address-book-select').value = addressBook.findIndex(r => r['to-name'].toLowerCase() === name.toLowerCase());
+  }
+
+  function loadRecipient(idx) {
+    if (idx === '' || !addressBook[idx]) return;
+    const rec = addressBook[idx];
+    RECIPIENT_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = rec[id] || '';
+    });
+    update();
+  }
+
+  function deleteRecipient() {
+    const select = document.getElementById('address-book-select');
+    const idx = select.value;
+    if (idx === '') return;
+    if (confirm('Delete this recipient from your address book?')) {
+      addressBook.splice(idx, 1);
+      saveAddressBook();
+      select.value = '';
+    }
+  }
+
+  /* SENDER ADDRESS BOOK */
+  function loadSenderBook() {
+    const raw = localStorage.getItem('invoice_sender_book');
+    if (raw) {
+      try { senderBook = JSON.parse(raw); } catch(e) { senderBook = []; }
+    }
+    renderSenderBookOptions();
+  }
+
+  function saveSenderBook() {
+    localStorage.setItem('invoice_sender_book', JSON.stringify(senderBook));
+    renderSenderBookOptions();
+  }
+
+  function renderSenderBookOptions() {
+    const select = document.getElementById('sender-book-select');
+    select.innerHTML = '<option value="">-- Select Saved Sender --</option>';
+    senderBook.forEach((snd, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = snd['from-name'] || `Sender #${idx + 1}`;
+      select.appendChild(opt);
+    });
+  }
+
+  function saveSender() {
+    const name = g('from-name');
+    if (!name) {
+      alert('Please enter a Sender Name before saving.');
+      return;
+    }
+    const entry = {};
+    SENDER_FIELDS.forEach(id => entry[id] = g(id));
+    
+    const existingIndex = senderBook.findIndex(s => s['from-name'].toLowerCase() === name.toLowerCase());
+    if (existingIndex >= 0) {
+      senderBook[existingIndex] = entry;
+    } else {
+      senderBook.push(entry);
+    }
+    saveSenderBook();
+    document.getElementById('sender-book-select').value = senderBook.findIndex(s => s['from-name'].toLowerCase() === name.toLowerCase());
+  }
+
+  function loadSender(idx) {
+    if (idx === '' || !senderBook[idx]) return;
+    const snd = senderBook[idx];
+    SENDER_FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = snd[id] || '';
+    });
+    update();
+  }
+
+  function deleteSender() {
+    const select = document.getElementById('sender-book-select');
+    const idx = select.value;
+    if (idx === '') return;
+    if (confirm('Delete this sender profile?')) {
+      senderBook.splice(idx, 1);
+      saveSenderBook();
+      select.value = '';
+    }
+  }
 
   function renderInvoice() {
     document.getElementById('p-number').textContent = g('inv-number') || '\u2014';
@@ -927,6 +1087,8 @@
 
   (function init() {
     restoreSections();
+    loadAddressBook();
+    loadSenderBook();
     const restored = loadState();
     if (!restored) {
       const today = new Date();
